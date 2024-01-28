@@ -117,7 +117,18 @@ def hessian(fn, var_list):
     return tf.hessians(y, x)
 
 
-def plot1d(x, y, x_test, y_test, y_samples, xlim=None, ylim=None, title=""):
+def plot1d(
+    x,
+    y,
+    x_test,
+    y_test,
+    y_samples,
+    xlim=None,
+    ylim=None,
+    xlabel="$x$",
+    ylabel="$y$",
+    title="",
+):
     y_mean = np.mean(y_samples, axis=0)
     y_std = np.std(y_samples, axis=0)
 
@@ -134,11 +145,33 @@ def plot1d(x, y, x_test, y_test, y_samples, xlim=None, ylim=None, title=""):
         label="2 stds",
     )
     plt.legend()
-    plt.xlabel("$x$")
-    plt.ylabel("$y$")
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
     plt.xlim(xlim)
     plt.ylim(ylim)
     plt.title(title)
+    plt.show()
+
+
+def plot2d(xx1, xx2, y, xlim=None, ylim=None, clim=None, title=""):
+    """
+    2-D plot.
+
+        Args:
+            x1 (array): The 2-D array representing the grid of the first coordinate,
+                    with shape [N1, N2].
+            x2 (array): The 2-D array representing the grid of the second coordinate,
+                    with shape [N1, N2].
+            y (array): The 2-D array representing values of the output on the
+                    grid formed by x1, x2, with shape [N1, N2]
+    """
+    fig, ax = plt.subplots(dpi=100)
+    c = ax.pcolormesh(xx1, xx2, y, cmap="RdBu")
+    ax.set_xlabel("$x_1$")
+    ax.set_ylabel("$x_2$")
+    ax.set_title(title)
+    fig.colorbar(c, ax=ax)
+    c.set_clim(clim)
     plt.show()
 
 

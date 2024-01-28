@@ -10,6 +10,9 @@ import matplotlib.pyplot as plt
 
 
 def load_data():
+    # update: data is removed from "../dataset/". Please visit the following link to
+    # download the training data for the operator:
+    # https://drive.google.com/file/d/1SCTJcFtxrN3U80CeU5rT1HQjXdOEJWN8/view?usp=sharing
     data = sio.loadmat("../dataset/Darcy_operator_train.mat")
     data_OOD = sio.loadmat("../dataset/Darcy_OOD.mat")
     x_loc, y_loc = data["x_train"], data["y_train"]
@@ -61,7 +64,6 @@ if __name__ == "__main__":
 
     ############################# Posterior inference ###############################
     samples = model.run()
-    samples = neuq.utils.batch_samples(samples)
 
     ################################# Predictions ###################################
     # for in-distribution estimate

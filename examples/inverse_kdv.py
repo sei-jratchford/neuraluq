@@ -33,6 +33,7 @@ def pde_fn(x, u, k_1, k_2):
     f = u_t - tf.exp(k_1) * u * u_x - tf.exp(k_2) * u_xxx
     return f
 
+
 @neuq.utils.timer
 def Samplable(
     x_u_train, t_u_train, u_train, x_f_train, t_f_train, f_train, noise, layers
@@ -81,7 +82,7 @@ def Samplable(
     model.compile(method)
     # obtain posterior samples
     samples, results = model.run()
-    print("Acceptance rate: %.3f \n"%(np.mean(results)))
+    print("Acceptance rate: %.3f \n" % (np.mean(results)))
 
     processes = [process_u, process_logk_1, process_logk_2]
     return processes, samples, model
@@ -92,6 +93,7 @@ def Trainable(
     x_u_train, t_u_train, u_train, x_f_train, t_f_train, f_train, noise, layers
 ):
     # build processes
+    ############# Sequential training #############
     process_u = neuq.process.Process(
         surrogate=neuq.surrogates.FNN(layers=layers),
         posterior=neuq_vars.fnn.Trainable(layers=layers),
@@ -104,6 +106,27 @@ def Trainable(
         surrogate=neuq.surrogates.Identity(),
         posterior=neuq_vars.const.Trainable(value=0),
     )
+    method = neuq.inferences.DEns(
+        num_samples=20, num_iterations=20000, optimizer=tf.train.AdamOptimizer(1e-3),
+    )
+    ############# Parallelized training #############
+    # num = 20
+    # process_u = neuq.process.Process(
+    #     surrogate=neuq.surrogates.FNN(layers=layers),
+    #     posterior=neuq_vars.pfnn.Trainable(layers=layers, num=num),
+    # )
+    # process_logk_1 = neuq.process.Process(
+    #     surrogate=neuq.surrogates.Identity(),
+    #     posterior=neuq_vars.pconst.Trainable(value=0, num=num),
+    # )
+    # process_logk_2 = neuq.process.Process(
+    #     surrogate=neuq.surrogates.Identity(),
+    #     posterior=neuq_vars.pconst.Trainable(value=0, num=num),
+    # )
+    # method = neuq.inferences.DEns(
+    #     num_iterations=20000, optimizer=tf.train.AdamOptimizer(1e-3), is_parallelized=True,
+    # )
+
     # build losses
     loss_u = neuq.likelihoods.MSE(
         inputs=np.concatenate([x_u_train, t_u_train], axis=-1),
@@ -124,13 +147,9 @@ def Trainable(
         likelihoods=[loss_u, loss_f],
     )
     # assign and compile method
-    method = neuq.inferences.DEns(
-        num_samples=20, num_iterations=20000, optimizer=tf.train.AdamOptimizer(1e-3),
-    )
     model.compile(method)
     # obtain posterior samples
     samples = model.run()
-    samples = neuq.utils.batch_samples(samples)  # reshape
 
     processes = [process_u, process_logk_1, process_logk_2]
     return processes, samples, model
@@ -212,7 +231,7 @@ if __name__ == "__main__":
         u_train,
     )
 
-    '''
+    """
     sio.savemat(
         "./Output/kdv_HMC.mat",
         {
@@ -230,4 +249,4 @@ if __name__ == "__main__":
             "k_2": samples_k_2.flatten(),
         },
     )
-    '''
+    """

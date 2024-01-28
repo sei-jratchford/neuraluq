@@ -19,10 +19,10 @@ Scientific machine learning (SciML) has emerged recently as an effective and pow
     - Laplace approximation (LA)
     
 Users can refer to this paper for the design and description, as well as the examples, of the NeuralUQ library:
-- [NeuralUQ: A comprehensive library for uncertainty quantification in neural differential equations and operators](http://arxiv.org/abs/2208.11866)
+- [NeuralUQ: A comprehensive library for uncertainty quantification in neural differential equations and operators](https://arxiv.org/pdf/2208.11866.pdf)
 
 Users can refer to the following papers for more details on the algorithms:
-- [A comprehensive review on uncertainty quantification in scientific machine learning](https://arxiv.org/pdf/2201.07766.pdf)
+- [A comprehensive review on uncertainty quantification in scientific machine learning](https://www.sciencedirect.com/science/article/pii/S0021999122009652)
 - UQ for physics-informed neural networks
   - [B-PINNs: Bayesian Physics-informed Networks](https://www.sciencedirect.com/science/article/pii/S0021999120306872)
   - [Learning Functional Priors and Posteriors from Data and Physics](https://www.sciencedirect.com/science/article/pii/S0021999122001358)
@@ -35,6 +35,7 @@ Users can refer to the following papers for more details on the algorithms:
 # Installation
 **NeuralUQ** requires the following dependencies to be installed:
 
+- Python 3.7.0
 - Tensorflow 2.9.1
 - TensorFlow Probability 0.17.0
 
@@ -50,6 +51,16 @@ $ git clone https://github.com/Crunch-UQ4MI/neuraluq.git
 ```
 
 # Explore more
+
+NeuralUQ for uncertainty quantification in general neural differential equations and operators:
+- [NeuralUQ: A comprehensive library for uncertainty quantification in neural differential equations and operators](https://arxiv.org/pdf/2208.11866.pdf)
+- [Uncertainty quantification in scientific machine learning: Methods, metrics, and comparisons](https://www.sciencedirect.com/science/article/pii/S0021999122009652)
+
+NeuralUQ for Biomechanical constitutive models with experimental data (inferring model parameters from known model and data; inferring functions from pre-trained GAN and data): 
+- [A Generative Modeling Framework for Inferring Families of Biomechanical Constitutive Laws in Data-Sparse Regimes](https://arxiv.org/pdf/2305.03184.pdf)
+
+Extensions of NeuralUQ:
+- [L-HYDRA: Multi-Head Physics-Informed Neural Networks](https://arxiv.org/abs/2301.02152)
 
 # Cite NeuralUQ
 

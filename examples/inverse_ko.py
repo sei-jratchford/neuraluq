@@ -29,6 +29,7 @@ def ode_fn(t, u, a, b):
     f3 = u3_t + (a + b) * u1 * u2
     return tf.concat([f1, f2, f3], axis=-1)
 
+
 @neuq.utils.timer
 def Samplable(t_u_train, u_train, t_f_train, f_train, noise, layers):
     u1_train, u3_train = u_train[:, 0:1], u_train[:, 2:3]
@@ -85,7 +86,7 @@ def Samplable(t_u_train, u_train, t_f_train, f_train, noise, layers):
     model.compile(method)
     # obtain posterior samples
     samples, results = model.run()
-    print("Acceptance rate: %.3f \n"%(np.mean(results)))
+    print("Acceptance rate: %.3f \n" % (np.mean(results)))
 
     processes = [process_u, process_a, process_b]
     return processes, samples, model
@@ -96,6 +97,7 @@ def Trainable(t_u_train, u_train, t_f_train, f_train, noise, layers):
     u1_train, u3_train = u_train[:, 0:1], u_train[:, 2:3]
     t2_train, u2_train = t_u_train[:7], u_train[:7, 1:2]
     # build processes
+    ############# Sequential training #############
     process_u = neuq.process.Process(
         surrogate=neuq.surrogates.FNN(layers=layers),
         posterior=neuq_vars.fnn.Trainable(
@@ -110,6 +112,29 @@ def Trainable(t_u_train, u_train, t_f_train, f_train, noise, layers):
         surrogate=neuq.surrogates.Identity(),
         posterior=neuq_vars.const.Trainable(value=0),
     )
+    method = neuq.inferences.DEns(
+        num_samples=20, num_iterations=20000, optimizer=tf.train.AdamOptimizer(1e-3),
+    )
+    ############# Parallelized training #############
+    # num = 70
+    # process_u = neuq.process.Process(
+    #     surrogate=neuq.surrogates.FNN(layers=layers),
+    #     posterior=neuq_vars.pfnn.Trainable(
+    #         layers=layers, num=num, regularizer=tf.keras.regularizers.l2(1e-7)
+    #     ),
+    # )
+    # process_a = neuq.process.Process(
+    #     surrogate=neuq.surrogates.Identity(),
+    #     posterior=neuq_vars.pconst.Trainable(value=0, num=num),
+    # )
+    # process_b = neuq.process.Process(
+    #     surrogate=neuq.surrogates.Identity(),
+    #     posterior=neuq_vars.pconst.Trainable(value=0, num=num),
+    # )
+    # method = neuq.inferences.DEns(
+    #     num_iterations=20000, optimizer=tf.train.AdamOptimizer(1e-3), is_parallelized=True,
+    # )
+
     # build losses
     loss_u13 = neuq.likelihoods.MSE(
         inputs=t_u_train,
@@ -138,14 +163,10 @@ def Trainable(t_u_train, u_train, t_f_train, f_train, noise, layers):
         likelihoods=[loss_u13, loss_u2, loss_f],
     )
     # assign and compile method
-    method = neuq.inferences.DEns(
-        num_samples=20, num_iterations=20000, optimizer=tf.train.AdamOptimizer(1e-3),
-    )
     # method = neuq.inferences.SEns(num_samples=20, num_iterations=20000)
     model.compile(method)
     # obtain posterior samples
     samples = model.run()
-    samples = neuq.utils.batch_samples(samples)  # reshape
 
     processes = [process_u, process_a, process_b]
     return processes, samples, model
@@ -283,8 +304,6 @@ def plots(u_pred, t_test, u_test, t_u_train, u_train):
     u1_train, u3_train = u_train[:, 0:1], u_train[:, 2:3]  # training data
     t2_train, u2_train = t_u_train[:7], u_train[:7, 1:2]  # training data
 
-    neuq.utils.hist(a_pred, name="value of $a$")
-    neuq.utils.hist(b_pred, name="value of $b$")
     neuq.utils.plot1d(
         t_u_train,
         u1_train,
@@ -338,33 +357,29 @@ if __name__ == "__main__":
     processes, samples, model = Samplable(
         t_u_train, u_train, t_f_train, f_train, noise, layers
     )
-    '''
-    processes, samples, model = Trainable(
-        t_u_train, u_train, t_f_train, f_train, noise, layers
-    )
-    '''
+    # processes, samples, model = Trainable(
+    #     t_u_train, u_train, t_f_train, f_train, noise, layers
+    # )
 
     # Note: Variational tends to work better, visually, if noise for the likelihood is set
     # to be small, based on our experience. However, if the noise is known, we can't justify setting it to a small value,
     # just to produce better-looking results.
-    '''
-    processes, samples, model = Variational(
-        t_u_train, u_train, t_f_train, f_train, noise, layers
-    )
-    '''
-    '''
-    processes, samples, model = MCD(
-        t_u_train, u_train, t_f_train, f_train, noise, layers
-    )
-    '''
+    # processes, samples, model = Variational(
+    #     t_u_train, u_train, t_f_train, f_train, noise, layers
+    # )
+    # processes, samples, model = MCD(
+    #     t_u_train, u_train, t_f_train, f_train, noise, layers
+    # )
 
     ################################# Predictions ####################################
     u_pred, a_pred, b_pred = model.predict(t_test, samples, processes, pde_fn=None)
 
     ############################### Postprocessing ###################################
     plots(u_pred, t_test, u_test, t_u_train, u_train)
+    neuq.utils.hist(a_pred.flatten(), name="value of $a$")
+    neuq.utils.hist(b_pred.flatten(), name="value of $b$")
 
-    '''
+    """
     sio.savemat(
         "./Output/KO_HMC.mat",
         {
@@ -382,4 +397,4 @@ if __name__ == "__main__":
             "noise": noise,
         },
     )
-    '''
+    """
